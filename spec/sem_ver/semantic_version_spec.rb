@@ -35,7 +35,7 @@ module SemVer
         expect(version.pre).to eq ['beta1', 'beta2']
       end
 
-      xit 'pre tags end up as string values' do
+      it 'pre tags end up as string values' do
         @version_hash[:pre] = ['beta1', 2]
         expect(version).to have(2).pre
         expect(version.pre).to eq ['beta1', '2']
@@ -48,6 +48,7 @@ module SemVer
       let(:version) { SemanticVersion.new(@version_hash) }
       include_examples 'SemanticVersion creation'
     end
+
     context 'parsing' do
       let(:version) { SemanticVersion.parse(version_string) }
       let(:version_string) { hash_to_string(@version_hash) }

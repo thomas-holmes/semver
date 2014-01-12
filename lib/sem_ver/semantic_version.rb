@@ -2,11 +2,8 @@ module SemVer
   class SemanticVersion
     attr_reader :major, :minor, :patch, :pre, :build
     def initialize(params)
-      @major = params[:major] || 0
-      @minor = params[:minor] || 0
-      @patch = params[:patch] || 0
-      @pre   = params[:pre]   || []
-      @build = params[:build] || []
+      hash = normalize_hash(params)
+      initialize_from_hash(hash)
     end
 
     VERSION_PATTERN = /\A(\d+)[.](\d+)[.](\d+)(?:-((?:[^0][a-zA-Z0-9-]+.?)+))?\Z/
@@ -22,6 +19,27 @@ module SemVer
       end
 
       self.new(version_hash)
+    rescue
+      raise InvalidSemanticVersion.new("Could not parse #{version_string}")
+    end
+
+  private
+    def normalize_hash(hash)
+      new_hash = {}
+      new_hash[:major] =  hash[:major] || 0
+      new_hash[:minor] =  hash[:minor] || 0
+      new_hash[:patch] =  hash[:patch] || 0
+      new_hash[:pre]   = (hash[:pre]   || []).map(&:to_s)
+      new_hash[:build] = (hash[:build] || []).map(&:to_s)
+      new_hash
+    end
+
+    def initialize_from_hash(hash)
+      @major = hash[:major]
+      @minor = hash[:minor]
+      @patch = hash[:patch]
+      @pre   = hash[:pre]
+      @build = hash[:build]
     end
   end
 
