@@ -23,6 +23,12 @@ module SemVer
         expect(version.pre). to eq []
       end
 
+      it 'can be made with a single tag' do
+        @version_hash[:pre] = 'beta1'
+        expect(version).to have(1).pre
+        expect(version.pre).to eq ['beta1']
+      end
+
       it 'can be made with an array of tags' do
         @version_hash[:pre] = ['beta']
         expect(version).to have(1).pre
@@ -59,8 +65,11 @@ end
 
 def hash_to_string(hash)
   version = "#{hash[:major]}.#{hash[:minor]}.#{hash[:patch]}"
-  unless hash[:pre].nil? || hash[:pre].empty?
-    version = version + "-#{hash[:pre].join('.')}"
+  pre = hash[:pre]
+  if String === pre
+    version = "#{version}-#{pre}"
+  elsif Enumerable === pre && !pre.empty?
+    version = "#{version}-#{pre.join('.')}"
   end
 
   unless hash[:build].nil? || hash[:build].empty?

@@ -26,11 +26,11 @@ module SemVer
   private
     def normalize_hash(hash)
       new_hash = {}
-      new_hash[:major] =  hash[:major] || 0
-      new_hash[:minor] =  hash[:minor] || 0
-      new_hash[:patch] =  hash[:patch] || 0
-      new_hash[:pre]   = (hash[:pre]   || []).map(&:to_s)
-      new_hash[:build] = (hash[:build] || []).map(&:to_s)
+      new_hash[:major] =   hash[:major]   || 0
+      new_hash[:minor] =   hash[:minor]   || 0
+      new_hash[:patch] =   hash[:patch]   || 0
+      new_hash[:pre]   = [(hash[:pre]     || [])].flat_map { |i| i }.map(&:to_s)
+      new_hash[:build] = [(hash[:build]   || [])].flat_map { |i| i }.map(&:to_s)
       new_hash
     end
 
