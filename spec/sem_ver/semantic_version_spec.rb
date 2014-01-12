@@ -1,3 +1,5 @@
+require 'simplecov'
+SimpleCov.start
 require 'sem_ver'
 require 'rspec/collection_matchers'
 
