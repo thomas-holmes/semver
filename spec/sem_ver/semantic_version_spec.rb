@@ -42,7 +42,7 @@ module SemVer
         expect(version.pre). to eq []
       end
 
-      it 'can be made with a single tag' do
+      it 'can be made with a single string tag' do
         @version_hash[:pre] = 'beta1'
         expect(version).to have(1).pre
         expect(version.pre).to eq ['beta1']
@@ -60,10 +60,16 @@ module SemVer
         expect(version.pre).to eq ['beta1', 'beta2']
       end
 
-      it 'pre tags end up as string values' do
+      specify 'pre tags end up as string values' do
         @version_hash[:pre] = ['beta1', 2]
         expect(version).to have(2).pre
         expect(version.pre).to eq ['beta1', '2']
+      end
+
+      specify 'empty pre tags are disregarded' do
+        @version_hash[:pre] = ['beta1', '']
+        expect(version).to have(1).pre
+        expect(version.pre).to eq ['beta1']
       end
 
       context 'error conditions' do
@@ -76,17 +82,65 @@ module SemVer
           @version_hash[:pre] = '*aaa'
           expect { version }.to raise_error(InvalidSemanticVersion)
         end
+
+        specify 'symbols other than dash are invalid' do
+          @version_hash[:pre] = ['sdk&d']
+          expect { version }.to raise_error(InvalidSemanticVersion)
+        end
+      end
+
+      context 'build labels' do
+        specify 'when no build metadata is supplied #build is an empty array' do
+          expect(version.build). to eq []
+        end
+
+        it 'can be made with a single string build tag' do
+          @version_hash[:build] = 'exp'
+          expect(version).to have(1).build
+          expect(version.build).to eq ['exp']
+        end
+
+        it 'can be made with an array of build tags' do
+          @version_hash[:build] = ['exp']
+          expect(version).to have(1).build
+          expect(version.build).to eq ['exp']
+        end
+
+        it 'can be made with multiple build tags' do
+          @version_hash[:build] = ['exp', '20141205']
+          expect(version).to have(2).build
+          expect(version.build).to eq ['exp', '20141205']
+        end
+
+        it 'build tags end up as string values' do
+          @version_hash[:build] = ['exp', 2]
+          expect(version).to have(2).build
+          expect(version.build).to eq ['exp', '2']
+        end
+
+        it 'empty build tags are disregarded' do
+          @version_hash[:build] = ['exp', '']
+          expect(version).to have(1).build
+          expect(version.build).to eq ['exp']
+        end
+
+        context 'error conditions' do
+          it 'raises on invalid characters' do
+            @version_hash[:build] = ['dafj^']
+            expect { version }.to raise_error(InvalidSemanticVersion)
+          end
+        end
       end
     end
   end
 
   describe "SemanticVersion" do
-    context 'initialization' do
+    context 'constructor' do
       let(:version) { SemanticVersion.new(@version_hash) }
       include_examples 'SemanticVersion creation'
     end
 
-    context 'parsing' do
+    context 'parser' do
       let(:version) { SemanticVersion.parse(version_string) }
       let(:version_string) { hash_to_string(@version_hash) }
       include_examples 'SemanticVersion creation'
@@ -103,8 +157,11 @@ def hash_to_string(hash)
     version = "#{version}-#{pre.join('.')}"
   end
 
-  unless hash[:build].nil? || hash[:build].empty?
-    version = version + "+#{hash[:build].join('.')}"
+  build = hash[:build]
+  if String === build
+    version = "#{version}+#{build}"
+  elsif Enumerable === build && !build.empty?
+    version = "#{version}+#{build.join('.')}"
   end
 
   version
