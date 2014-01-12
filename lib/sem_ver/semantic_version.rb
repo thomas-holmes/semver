@@ -9,7 +9,10 @@ module SemVer
     VERSION_PATTERN = /\A(\d+)[.](\d+)[.](\d+)(?:-((?:[a-zA-Z1-9-][a-zA-Z0-9-]*\.?)+))?(?:\+((?:[a-zA-Z0-9-]*\.?)+))?\Z/
     # SIMPLE_PATTERN  = /\A(\d+)[.](\d+)[.](\d+)(?:-(.+))?(?:+(.+))?\Z/
     def self.parse(version_string)
-      match = VERSION_PATTERN.match(version_string)
+      unless match = VERSION_PATTERN.match(version_string)
+        raise InvalidSemanticVersion.new("Could not parse #{version_string}")
+      end
+
       version_hash = { :major => match.captures[0].to_i,
                        :minor => match.captures[1].to_i,
                        :patch => match.captures[2].to_i,
@@ -24,8 +27,6 @@ module SemVer
       end
 
       self.new(version_hash)
-    rescue
-      raise InvalidSemanticVersion.new("Could not parse #{version_string}")
     end
 
   private
