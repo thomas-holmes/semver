@@ -6,8 +6,7 @@ module SemVer
       initialize_from_hash(hash)
     end
 
-    VERSION_PATTERN = /\A(\d+)[.](\d+)[.](\d+)(?:-((?:[^0][a-zA-Z0-9-]+.?)+))?\Z/
-
+    VERSION_PATTERN = /\A(\d+)[.](\d+)[.](\d+)(?:-((?:[a-zA-Z1-9-][a-zA-Z0-9-]*.?)+))?\Z/
     def self.parse(version_string)
       match = VERSION_PATTERN.match(version_string)
       version_hash = { :major => match.captures[0].to_i,
@@ -35,11 +34,40 @@ module SemVer
     end
 
     def initialize_from_hash(hash)
-      @major = hash[:major]
-      @minor = hash[:minor]
-      @patch = hash[:patch]
-      @pre   = hash[:pre]
+      self.major  = hash[:major]
+      self.minor  = hash[:minor]
+      self.patch  = hash[:patch]
+      self.pre    = hash[:pre]
       @build = hash[:build]
+    end
+
+    def major=(value)
+      @major = value if validate_version!('Major version', value)
+    end
+
+    def minor=(value)
+      @minor = value if validate_version!('Minor version', value)
+    end
+
+    def patch=(value)
+      @patch = value if validate_version!('Patch version', value)
+    end
+
+    def pre=(value)
+      @pre = value if validate_pre!('Pre-release version', value)
+    end
+
+    def validate_version!(field, value)
+      raise InvalidSemanticVersion.new("#{field} must be a Fixnum") unless value.is_a?(Fixnum)
+      raise InvalidSemanticVersion.new("#{field} version must be >= 0") unless value >= 0
+      true
+    end
+
+    PRE_PATTERN = /\A[a-zA-Z1-9-][a-zA-Z0-9-]*\Z/
+    # Assumes it has already been normalized to an array.
+    def validate_pre!(field, value)
+      raise InvalidSemanticVersion.new unless value.all? { |p| p =~ PRE_PATTERN }
+      true
     end
   end
 

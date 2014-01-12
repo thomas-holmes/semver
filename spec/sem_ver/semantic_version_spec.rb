@@ -6,7 +6,7 @@ RSpec::Matchers.define :be_a_version_equivalent_to do |hash|
     version.major == (hash[:major] || 0)  &&
     version.minor == (hash[:minor] || 0)  &&
     version.patch == (hash[:patch] || 0)  &&
-    version.pre   == (hash[:pre]   || []) &&
+    version.pre   == [(hash[:pre]  || [])].flat_map { |i| i }.map(&:to_s) &&
     version.build == (hash[:build] || [])
   end
 end
@@ -14,8 +14,27 @@ end
 module SemVer
   shared_examples 'SemanticVersion creation' do
     before(:each) { @version_hash = { :major => 1, :minor => 2, :patch => 3 } }
-    it 'create a SemanticVersion' do
-      expect(version).to be_a_version_equivalent_to(@version_hash)
+    context 'simple version' do
+      it 'can be created' do
+        expect(version).to be_a_version_equivalent_to(@version_hash)
+      end
+
+      context 'error conditions' do
+        specify 'negative major version raises' do
+          @version_hash[:major] = -1
+          expect { version }.to raise_error(InvalidSemanticVersion)
+        end
+
+        specify 'negative minor version raises' do
+          @version_hash[:minor] = -1
+          expect { version }.to raise_error(InvalidSemanticVersion)
+        end
+
+        specify 'negative patch version raises' do
+          @version_hash[:patch] = -1
+          expect { version }.to raise_error(InvalidSemanticVersion)
+        end
+      end
     end
 
     context 'pre-release versions' do
@@ -45,6 +64,18 @@ module SemVer
         @version_hash[:pre] = ['beta1', 2]
         expect(version).to have(2).pre
         expect(version.pre).to eq ['beta1', '2']
+      end
+
+      context 'error conditions' do
+        specify 'leading 0 is invalid' do
+          @version_hash[:pre] = '0123'
+          expect { version }.to raise_error(InvalidSemanticVersion)
+        end
+
+        specify 'leading special character is invalid' do
+          @version_hash[:pre] = '*aaa'
+          expect { version }.to raise_error(InvalidSemanticVersion)
+        end
       end
     end
   end
