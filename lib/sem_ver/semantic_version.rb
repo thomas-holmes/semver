@@ -28,6 +28,33 @@ module SemVer
       self.new(version_hash)
     end
 
+    # Equality
+    def ==(other)
+      self.major == other.major &&
+        self.minor == other.minor &&
+        self.patch == other.patch
+    end
+
+    def >(other)
+      self.major > other.major ||
+        self.minor > other.minor ||
+        self.patch > other.patch
+    end
+
+    def <(other)
+      self.major < other.major ||
+        self.minor < other.minor ||
+        self.patch < other.patch
+    end
+
+    def <=(other)
+      self < other || self == other
+    end
+
+    def >=(other)
+      self > other || self == other
+    end
+
   private
     def normalize_hash(hash)
       new_hash = {}

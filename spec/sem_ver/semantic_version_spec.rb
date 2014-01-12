@@ -145,6 +145,85 @@ module SemVer
       let(:version_string) { hash_to_string(@version_hash) }
       include_examples 'SemanticVersion creation'
     end
+
+    context 'comparison' do
+      let(:version_2) { SemanticVersion.parse('2.0.0') }
+      let(:version_3) { SemanticVersion.parse('3.0.0') }
+      let(:version_3_1) { SemanticVersion.parse('3.1.0') }
+      let(:version_3_0_1) { SemanticVersion.parse('3.0.1') }
+
+      context '#==' do
+        specify '3.0.0 is equal to 3.0.0' do
+          version = SemanticVersion.parse('3.0.0')
+          expect(version).to eq version_3
+        end
+      end
+
+      context '#>' do
+        specify '3.0.0 is greater than 2.0.0' do
+          expect(version_3).to be > version_2
+        end
+
+        specify '3.1.0 is greater than 3.0.0' do
+          expect(version_3_1).to be > version_3
+        end
+        specify '3.0.1 is greater than 3.0.0' do
+          expect(version_3_0_1).to be > version_3
+        end
+      end
+
+      context '#<' do
+        specify '2.0.0 is less than 3.0.0' do
+          expect(version_2).to be < version_3
+        end
+
+        specify '3.0.0 is less than 3.1.0' do
+          expect(version_3).to be < version_3_1
+        end
+
+        specify '3.0.0 is less than 3.0.1' do
+          expect(version_3).to be < version_3_0_1
+        end
+      end
+
+      context '#<=' do
+        specify '3.0.0 is less than or equal to 3.0.0' do
+          version = SemanticVersion.parse('3.0.0')
+          expect(version).to be <= version_3
+        end
+
+        specify '2.0.0 is less than or equal to 3.0.0' do
+          expect(version_2).to be <= version_3
+        end
+
+        specify '3.0.0 is less than or equal to 3.1.0' do
+          expect(version_3).to be <= version_3_1
+        end
+
+        specify '3.0.0 is less than or equal to 3.0.1' do
+          expect(version_3).to be <= version_3_0_1
+        end
+      end
+
+      context '#>=' do
+        specify '3.0.0 is greater than or equal to 3.0.0' do
+          version = SemanticVersion.parse('3.0.0')
+          expect(version).to be >= version_3
+        end
+
+        specify '3.0.0 is greater than or equal to 2.0.0' do
+          expect(version_3).to be >= version_2
+        end
+
+        specify '3.1.0 is greater than or equal to 3.0.0' do
+          expect(version_3_1).to be >= version_3
+        end
+
+        specify '3.0.1 is greater than or equal to 3.0.0' do
+          expect(version_3_0_1).to be >= version_3
+        end
+      end
+    end
   end
 end
 
