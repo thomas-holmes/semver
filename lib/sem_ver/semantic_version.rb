@@ -31,11 +31,11 @@ module SemVer
   private
     def normalize_hash(hash)
       new_hash = {}
-      new_hash[:major] =   hash[:major]   || 0
-      new_hash[:minor] =   hash[:minor]   || 0
-      new_hash[:patch] =   hash[:patch]   || 0
-      new_hash[:pre]   = [(hash[:pre]     || [])].flat_map { |i| i }.map(&:to_s).reject(&:empty?)
-      new_hash[:build] = [(hash[:build]   || [])].flat_map { |i| i }.map(&:to_s).reject(&:empty?)
+      new_hash[:major] =   hash[:major] || 0
+      new_hash[:minor] =   hash[:minor] || 0
+      new_hash[:patch] =   hash[:patch] || 0
+      new_hash[:pre]   = [(hash[:pre]   || [])].flat_map { |i| i }.map(&:to_s).reject(&:empty?)
+      new_hash[:build] = [(hash[:build] || [])].flat_map { |i| i }.map(&:to_s).reject(&:empty?)
       new_hash
     end
 
@@ -81,6 +81,7 @@ module SemVer
     end
 
     BUILD_PATTERN = /\A[a-zA-Z0-9-]*\Z/
+    # Assumes it has already been normalized to an array.
     def validate_build!(field, value)
       raise InvalidSemanticVersion.new("#{field} is invalid") unless value.all? { |b| b =~ BUILD_PATTERN }
       true
