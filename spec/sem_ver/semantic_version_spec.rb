@@ -5,11 +5,11 @@ require 'rspec/collection_matchers'
 
 RSpec::Matchers.define :be_a_version_equivalent_to do |hash|
   match do |version|
-    version.major == (hash[:major] || 0)  &&
-    version.minor == (hash[:minor] || 0)  &&
-    version.patch == (hash[:patch] || 0)  &&
-    version.pre   == [(hash[:pre]  || [])].flat_map { |i| i }.map(&:to_s) &&
-    version.build == (hash[:build] || [])
+    version.major ==  (hash[:major] || 0)  &&
+    version.minor ==  (hash[:minor] || 0)  &&
+    version.patch ==  (hash[:patch] || 0)  &&
+    version.pre   == [(hash[:pre]   || [])].flat_map { |i| i }.map(&:to_s) &&
+    version.build == [(hash[:build] || [])].flat_map { |i| i }.map(&:to_s)
   end
 end
 
@@ -90,48 +90,65 @@ module SemVer
           expect { version }.to raise_error(InvalidSemanticVersion)
         end
       end
+    end
 
-      context 'build labels' do
-        specify 'when no build metadata is supplied #build is an empty array' do
-          expect(version.build). to eq []
-        end
+    context 'build labels' do
+      specify 'when no build metadata is supplied #build is an empty array' do
+        expect(version.build). to eq []
+      end
 
-        it 'can be made with a single string build tag' do
-          @version_hash[:build] = 'exp'
-          expect(version).to have(1).build
-          expect(version.build).to eq ['exp']
-        end
+      it 'can be made with a single string build tag' do
+        @version_hash[:build] = 'exp'
+        expect(version).to have(1).build
+        expect(version.build).to eq ['exp']
+      end
 
-        it 'can be made with an array of build tags' do
-          @version_hash[:build] = ['exp']
-          expect(version).to have(1).build
-          expect(version.build).to eq ['exp']
-        end
+      it 'can be made with an array of build tags' do
+        @version_hash[:build] = ['exp']
+        expect(version).to have(1).build
+        expect(version.build).to eq ['exp']
+      end
 
-        it 'can be made with multiple build tags' do
-          @version_hash[:build] = ['exp', '20141205']
-          expect(version).to have(2).build
-          expect(version.build).to eq ['exp', '20141205']
-        end
+      it 'can be made with multiple build tags' do
+        @version_hash[:build] = ['exp', '20141205']
+        expect(version).to have(2).build
+        expect(version.build).to eq ['exp', '20141205']
+      end
 
-        it 'build tags end up as string values' do
-          @version_hash[:build] = ['exp', 2]
-          expect(version).to have(2).build
-          expect(version.build).to eq ['exp', '2']
-        end
+      it 'build tags end up as string values' do
+        @version_hash[:build] = ['exp', 2]
+        expect(version).to have(2).build
+        expect(version.build).to eq ['exp', '2']
+      end
 
-        it 'empty build tags are disregarded' do
-          @version_hash[:build] = ['exp', '']
-          expect(version).to have(1).build
-          expect(version.build).to eq ['exp']
-        end
+      it 'empty build tags are disregarded' do
+        @version_hash[:build] = ['exp', '']
+        expect(version).to have(1).build
+        expect(version.build).to eq ['exp']
+      end
 
-        context 'error conditions' do
-          it 'raises on invalid characters' do
-            @version_hash[:build] = ['dafj^']
-            expect { version }.to raise_error(InvalidSemanticVersion)
-          end
+      context 'error conditions' do
+        it 'raises on invalid characters' do
+          @version_hash[:build] = ['dafj^']
+          expect { version }.to raise_error(InvalidSemanticVersion)
         end
+      end
+    end
+
+    context 'pre and build labels' do
+      specify 'one of each' do
+        @version_hash.merge!({ :pre => 'pre', :build => '333' })
+        expect(version).to be_a_version_equivalent_to(@version_hash)
+      end
+
+      specify 'multiple pre-releae tags' do
+        @version_hash.merge!({ :pre => ['pre', 'aaa'], :build => '333'})
+        expect(version).to be_a_version_equivalent_to(@version_hash)
+      end
+
+      specify 'multiple build tags' do
+        @version_hash.merge!({ :pre => 'pre', :build => ['333', 'xyz']})
+        expect(version).to be_a_version_equivalent_to(@version_hash)
       end
     end
   end
@@ -252,6 +269,24 @@ module SemVer
         specify '3.0.0-pre1 is less than or equal to 3.0.0' do
           version = SemanticVersion.parse('3.0.0-pre1')
           expect(version).to be <= version_3
+        end
+      end
+
+      context 'from specs' do
+        LESS_THAN_REFERENCE = "1.0.0-alpha 1.0.0-alpha.1 1.0.0-alpha.beta 1.0.0-beta 1.0.0-beta.2 1.0.0-beta.11 1.0.0-rc.1 1.0.0"
+        versions = LESS_THAN_REFERENCE.split(' ').map { |v| SemanticVersion.parse(v) }
+        pairs = versions.drop(1).each_with_index.map { |o, i| [versions[i - 1], o] }
+        pairs.each do |l, r|
+          xspecify "#{l} to be less than #{r}" do
+            expect(l).to be < r
+          end
+        end
+      end
+
+      context '#to_s' do
+        ['3.0.0', '3.0.0-beta1', '3.0.0-beta1.8', '3.1.2+12345',
+         '3.1.2+123.456', '3.1.2-beta1.pre+1111', '3.1.2-beta+111.443'].each do |v|
+          it(v) { expect(SemanticVersion.parse(v).to_s).to eq v }
         end
       end
     end

@@ -6,7 +6,7 @@ module SemVer
       initialize_from_hash(hash)
     end
 
-    VERSION_PATTERN  = /\A(\d+)\.(\d+)\.(\d+)(?:-(.+))?(?:\+(.+))?\Z/
+    VERSION_PATTERN  = /\A(\d+)\.(\d+)\.(\d+)(?:-(.+?))?(?:\+(.+))?\Z/
     def self.parse(version_string)
       unless match = VERSION_PATTERN.match(version_string)
         raise InvalidSemanticVersion.new("Could not parse #{version_string}")
@@ -55,6 +55,20 @@ module SemVer
 
     def >=(other)
       self > other || self == other
+    end
+
+    def to_s
+      version = "#{@major}.#{@minor}.#{@patch}"
+
+      unless @pre.empty?
+        version = "#{version}-#{pre.join('.')}"
+      end
+
+      unless @build.empty?
+        version = "#{version}+#{build.join('.')}"
+      end
+
+      version
     end
 
   private
