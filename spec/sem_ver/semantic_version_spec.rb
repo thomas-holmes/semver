@@ -159,6 +159,14 @@ module SemVer
           version = SemanticVersion.parse('3.0.0')
           expect(version).to eq version_3
         end
+
+        specify '3.0.0-pre1 is equal to 3.0.0-pre1' do
+          expect(SemanticVersion.parse('3.0.0-pre1')).to eq SemanticVersion.parse('3.0.0-pre1')
+        end
+
+        specify '3.0.0-x.Y is equal to 3.0.0-x.Y' do
+          expect(SemanticVersion.parse('3.0.0-x.Y')).to eq SemanticVersion.parse('3.0.0-x.Y')
+        end
       end
 
       context '#>' do
@@ -169,8 +177,38 @@ module SemVer
         specify '3.1.0 is greater than 3.0.0' do
           expect(version_3_1).to be > version_3
         end
+
         specify '3.0.1 is greater than 3.0.0' do
           expect(version_3_0_1).to be > version_3
+        end
+
+        specify '3.0.0 is greater than 3.0.0-pre1' do
+          version = SemanticVersion.parse('3.0.0-pre1')
+          expect(version_3).to be > version
+        end
+      end
+
+      context '#>=' do
+        specify '3.0.0 is greater than or equal to 3.0.0' do
+          version = SemanticVersion.parse('3.0.0')
+          expect(version).to be >= version_3
+        end
+
+        specify '3.0.0 is greater than or equal to 2.0.0' do
+          expect(version_3).to be >= version_2
+        end
+
+        specify '3.1.0 is greater than or equal to 3.0.0' do
+          expect(version_3_1).to be >= version_3
+        end
+
+        specify '3.0.1 is greater than or equal to 3.0.0' do
+          expect(version_3_0_1).to be >= version_3
+        end
+
+        specify '3.0.0 is greater than or equal 3.0.0-pre1' do
+          version = SemanticVersion.parse('3.0.0-pre1')
+          expect(version_3).to be >= version
         end
       end
 
@@ -185,6 +223,11 @@ module SemVer
 
         specify '3.0.0 is less than 3.0.1' do
           expect(version_3).to be < version_3_0_1
+        end
+
+        specify '3.0.0-pre1 is less than 3.0.0' do
+          version = SemanticVersion.parse('3.0.0-pre1')
+          expect(version).to be < version_3
         end
       end
 
@@ -205,24 +248,10 @@ module SemVer
         specify '3.0.0 is less than or equal to 3.0.1' do
           expect(version_3).to be <= version_3_0_1
         end
-      end
 
-      context '#>=' do
-        specify '3.0.0 is greater than or equal to 3.0.0' do
-          version = SemanticVersion.parse('3.0.0')
-          expect(version).to be >= version_3
-        end
-
-        specify '3.0.0 is greater than or equal to 2.0.0' do
-          expect(version_3).to be >= version_2
-        end
-
-        specify '3.1.0 is greater than or equal to 3.0.0' do
-          expect(version_3_1).to be >= version_3
-        end
-
-        specify '3.0.1 is greater than or equal to 3.0.0' do
-          expect(version_3_0_1).to be >= version_3
+        specify '3.0.0-pre1 is less than or equal to 3.0.0' do
+          version = SemanticVersion.parse('3.0.0-pre1')
+          expect(version).to be <= version_3
         end
       end
     end

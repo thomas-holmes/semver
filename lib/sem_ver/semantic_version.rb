@@ -38,13 +38,15 @@ module SemVer
     def >(other)
       self.major > other.major ||
         self.minor > other.minor ||
-        self.patch > other.patch
+        self.patch > other.patch ||
+        self.pre.empty? && other.pre.any?
     end
 
     def <(other)
       self.major < other.major ||
         self.minor < other.minor ||
-        self.patch < other.patch
+        self.patch < other.patch ||
+        self.pre.any? && other.pre.empty?
     end
 
     def <=(other)
